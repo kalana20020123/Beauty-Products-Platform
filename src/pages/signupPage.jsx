@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
 import { BsGoogle } from 'react-icons/bs';
+import { FaUser, FaEnvelope, FaLock, FaImage, FaArrowRight } from 'react-icons/fa';
 import uploadMediaToSupabase from '../utils/mediaUpload';
 
 export default function SignupPage() {
@@ -14,6 +15,8 @@ export default function SignupPage() {
     password: '',
     profilePicture: '',
   });
+  const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const lastNameRef = useRef(null);
   const emailRef = useRef(null);
@@ -38,14 +41,19 @@ export default function SignupPage() {
     const file = event.target.files[0];
     if (!file) return;
 
+    setUploading(true);
     try {
       const uploadedUrl = await uploadMediaToSupabase(file);
       setFormData((prev) => ({
         ...prev,
         profilePicture: uploadedUrl,
       }));
+      toast.success('Profile picture uploaded!');
     } catch (error) {
       console.error("Error uploading image:", error);
+      toast.error('Failed to upload image');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -55,8 +63,16 @@ export default function SignupPage() {
       return;
     }
 
+    setLoading(true);
+    const backendUrl = import.meta.env.VITE_BACKEND_URL;
+    if (!backendUrl) {
+      toast.error('Backend URL not configured');
+      setLoading(false);
+      return;
+    }
+
     axios
-      .post(import.meta.env.VITE_BACKEND_URL + "/api/users", {
+      .post(backendUrl + "/api/users", {
         ...formData,
         profilePicture: formData.profilePicture
           ? formData.profilePicture
@@ -65,21 +81,28 @@ export default function SignupPage() {
       .then((res) => {
         if (res.data.error) {
           toast.error(res.data.message);
+          setLoading(false);
           return;
         }
         toast.success("Account created successfully!");
         window.location.href = "/login";
       })
       .catch((err) => {
-        toast.error("Something went wrong!");
-        console.error(err);
+        console.error("Signup error:", err);
+        toast.error("Something went wrong! Please try again.");
+        setLoading(false);
       });
   }
 
   const googleSignup = useGoogleLogin({
     onSuccess: (res) => {
+      const backendUrl = import.meta.env.VITE_BACKEND_URL;
+      if (!backendUrl) {
+        toast.error('Backend URL not configured');
+        return;
+      }
       axios
-        .post(import.meta.env.VITE_BACKEND_URL + "/api/users/google", {
+        .post(backendUrl + "/api/users/google", {
           token: res.access_token
         })
         .then((response) => {
@@ -98,134 +121,175 @@ export default function SignupPage() {
   });
 
   return (
-    <div
-      className="w-full min-h-screen flex flex-col items-center justify-center relative px-4"
-      style={{
-        backgroundImage: 'url("/background5.png")',
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundAttachment: "fixed",
-      }}
-    >
-      <div className="absolute inset-0 bg-black/40"></div>
+    <div className="w-full min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 flex items-center justify-center py-12 px-4" style={{ minHeight: '100vh', width: '100%', position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+      <div className="w-full max-w-md">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-rose-400 to-pink-400 rounded-full mb-6">
+            <FaUser className="text-white text-3xl" />
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-bold text-gray-800 mb-3">
+            Create Account
+          </h1>
+          <p className="text-gray-600">
+            Join us and start your beauty journey
+          </p>
+        </div>
 
-      <div className="relative w-full max-w-[450px] p-6 sm:p-8 m-4 sm:m-8 bg-white backdrop-filter backdrop-blur-lg bg-opacity-30 shadow-lg rounded-lg">
-        <h1 className="text-3xl font-bold text-secondary text-center mb-6">
-          Create an Account
-        </h1>
-        <form className="space-y-4">
-          <div>
-            <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
-              First Name
-            </label>
-            <input
-              id="firstName"
-              name="firstName"
-              type="text"
-              value={formData.firstName}
-              onChange={handleChange}
-              placeholder="Enter your first name"
-              onKeyDown={(e) => handleKeyDown(e, lastNameRef)}
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
-              Last Name
-            </label>
-            <input
-              id="lastName"
-              name="lastName"
-              type="text"
-              value={formData.lastName}
-              onChange={handleChange}
-              placeholder="Enter your last name"
-              onKeyDown={(e) => handleKeyDown(e, emailRef)}
-              ref={lastNameRef}
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Enter your email"
-              onKeyDown={(e) => handleKeyDown(e, passwordRef)}
-              ref={emailRef}
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              value={formData.password}
-              onChange={handleChange}
-              placeholder="Enter your password"
-              onKeyDown={(e) => handleKeyDown(e, profilePictureRef)}
-              ref={passwordRef}
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="profilePicture" className="block text-sm font-medium text-gray-700 mb-1">
-              Profile Picture
-            </label>
-            <input
-              id="profilePicture"
-              name="profilePicture"
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              ref={profilePictureRef}
-              className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
-            />
-          </div>
+        {/* Signup Form */}
+        <div className="bg-white rounded-2xl shadow-2xl p-8">
+          <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); signup(); }}>
+            <div className="grid sm:grid-cols-2 gap-5">
+              <div>
+                <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700 mb-2">
+                  First Name
+                </label>
+                <div className="relative">
+                  <FaUser className="absolute left-4 top-1/2 transform -translate-y-1/2 text-rose-500" />
+                  <input
+                    id="firstName"
+                    name="firstName"
+                    type="text"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    placeholder="First name"
+                    onKeyDown={(e) => handleKeyDown(e, lastNameRef)}
+                    className="w-full pl-12 pr-4 py-4 border-2 border-pink-200 rounded-xl focus:outline-none focus:border-rose-500 focus:ring-2 focus:ring-pink-200 transition-all text-gray-800 placeholder-gray-400"
+                    required
+                  />
+                </div>
+              </div>
 
-          <button
-            type="button"
-            onClick={signup}
-            className="w-full px-4 py-2 font-semibold text-white bg-secondary rounded-lg hover:bg-accent bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-300 hover:to-yellow-500 p-3 mt-4 shadow-md transition-transform transform hover:scale-105"
-          >
-            Sign Up
-          </button>
+              <div>
+                <label htmlFor="lastName" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Last Name
+                </label>
+                <div className="relative">
+                  <FaUser className="absolute left-4 top-1/2 transform -translate-y-1/2 text-rose-500" />
+                  <input
+                    id="lastName"
+                    name="lastName"
+                    type="text"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    placeholder="Last name"
+                    onKeyDown={(e) => handleKeyDown(e, emailRef)}
+                    ref={lastNameRef}
+                    className="w-full pl-12 pr-4 py-4 border-2 border-pink-200 rounded-xl focus:outline-none focus:border-rose-500 focus:ring-2 focus:ring-pink-200 transition-all text-gray-800 placeholder-gray-400"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
 
-          <div className="mt-6 text-center">
-            <span className="text-sm text-gray-700">Already have an account?</span>
-            <Link to="/login" className="ml-1 text-secondary hover:text-accent font-semibold transition-all duration-200">
-              Login
-            </Link>
-          </div>
+            <div>
+              <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+                Email Address
+              </label>
+              <div className="relative">
+                <FaEnvelope className="absolute left-4 top-1/2 transform -translate-y-1/2 text-rose-500" />
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Enter your email"
+                  onKeyDown={(e) => handleKeyDown(e, passwordRef)}
+                  ref={emailRef}
+                  className="w-full pl-12 pr-4 py-4 border-2 border-beauty-blush/30 rounded-xl focus:outline-none focus:border-beauty-dusty-rose focus:ring-2 focus:ring-beauty-blush/20 transition-all text-gray-800 placeholder-gray-400"
+                  required
+                />
+              </div>
+            </div>
 
-          <div className="relative flex items-center my-4">
-            <div className="flex-grow border-t border-gray-300"></div>
-            <span className="mx-4 text-gray-600 font-medium">OR</span>
-            <div className="flex-grow border-t border-gray-300"></div>
-          </div>
+            <div>
+              <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <FaLock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-rose-500" />
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Create a password"
+                  onKeyDown={(e) => handleKeyDown(e, profilePictureRef)}
+                  ref={passwordRef}
+                  className="w-full pl-12 pr-4 py-4 border-2 border-beauty-blush/30 rounded-xl focus:outline-none focus:border-beauty-dusty-rose focus:ring-2 focus:ring-beauty-blush/20 transition-all text-gray-800 placeholder-gray-400"
+                  required
+                />
+              </div>
+            </div>
 
-          <button 
-            onClick={() => googleSignup()} 
-            type="button" 
-            className="w-full flex items-center justify-center gap-2 px-4 py-2 font-semibold text-white bg-secondary rounded-lg hover:bg-accent bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-300 hover:to-yellow-500 p-3 mt-4 shadow-md transition-transform transform hover:scale-105"
-          >
-            <BsGoogle className="text-lg" />
-            Sign up with Google
-          </button>
-        </form>
+            <div>
+              <label htmlFor="profilePicture" className="block text-sm font-semibold text-gray-700 mb-2">
+                Profile Picture (Optional)
+              </label>
+              <div className="relative">
+                <FaImage className="absolute left-4 top-1/2 transform -translate-y-1/2 text-rose-500" />
+                <input
+                  id="profilePicture"
+                  name="profilePicture"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  ref={profilePictureRef}
+                  className="w-full pl-12 pr-4 py-4 border-2 border-pink-200 rounded-xl focus:outline-none focus:border-rose-500 focus:ring-2 focus:ring-pink-200 transition-all text-gray-800 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-amber-50 file:text-rose-500 hover:file:bg-pink-50"
+                />
+                {uploading && (
+                  <p className="text-sm text-rose-500 mt-2">Uploading...</p>
+                )}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={signup}
+              disabled={loading || uploading}
+              className="w-full bg-gradient-to-r from-rose-500 to-pink-500 hover:from-pink-500 hover:to-rose-500 text-white font-semibold py-4 rounded-xl shadow-lg transform transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                  Creating Account...
+                </>
+              ) : (
+                <>
+                  Create Account
+                  <FaArrowRight />
+                </>
+              )}
+            </button>
+
+            <div className="relative flex items-center my-6">
+              <div className="flex-grow border-t border-pink-200"></div>
+              <span className="mx-4 text-gray-500 font-medium text-sm">OR</span>
+              <div className="flex-grow border-t border-pink-200"></div>
+            </div>
+
+            <button 
+              onClick={() => googleSignup()} 
+              type="button" 
+              className="w-full flex items-center justify-center gap-3 bg-white border-2 border-rose-500 text-rose-500 font-semibold py-4 rounded-xl hover:bg-amber-50 transform transition-all duration-300 hover:scale-105 shadow-md"
+            >
+              <BsGoogle className="text-xl" />
+              Sign up with Google
+            </button>
+
+            <div className="text-center pt-4">
+              <span className="text-sm text-gray-600">Already have an account?</span>
+              <Link 
+                to="/login" 
+                className="ml-2 text-rose-500 hover:text-pink-500 font-semibold transition-colors"
+              >
+                Sign In
+              </Link>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

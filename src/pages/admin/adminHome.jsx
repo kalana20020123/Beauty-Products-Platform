@@ -7,7 +7,7 @@ export default function AdminHome() {
             </h1>
             <img 
                 src="/head2.png" 
-                alt="KSW Beauty Care 2" 
+                alt="Crystal Beauty Care 2" 
                 className="w-auto h-auto"
             />
         </div>

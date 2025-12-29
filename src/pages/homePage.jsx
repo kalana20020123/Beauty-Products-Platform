@@ -1,7 +1,5 @@
 import { Route, Routes } from 'react-router-dom';
 import Header from '../components/header';
-import LoginPage from './loginPage';
-import SignupPage from './signupPage';
 import ProductOverview from './home/productOverview';
 import Home from './home/home';
 import ProductPage from './home/product';
@@ -20,8 +18,6 @@ export default function HomePage() {
         <Routes path="/*">
           <Route path="/" element={<Home/>} />
           <Route path="/products" element={<ProductPage/>} />
-          <Route path="/login" element={<LoginPage/>} />
-          <Route path="/signup" element={<SignupPage/>} />
           <Route path="/cart" element={<Cart/>}/>
           <Route path="/shipping" element={<ShippingPage/>}/>   
           <Route path="/orders" element={<MyOrdersPage/>}/>

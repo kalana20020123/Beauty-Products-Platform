@@ -4,11 +4,13 @@ import CartCard from "../../components/cartCard";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
+import { FaShoppingCart, FaArrowRight } from "react-icons/fa";
 
 export default function Cart() {
   const [cart, setCart] = useState([]);
   const [total, setTotal] = useState(0);
   const [labeledTotal, setLabeledTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -16,18 +18,26 @@ export default function Cart() {
   }, []);
 
   async function fetchCartData() {
-    const updatedCart = loadCart() || []; // Ensure cart is an array
+    setLoading(true);
+    const updatedCart = loadCart() || [];
     setCart(updatedCart);
 
     if (updatedCart.length === 0) {
       setTotal(0);
       setLabeledTotal(0);
+      setLoading(false);
       return;
     }
 
     try {
+      const backendUrl = import.meta.env.VITE_BACKEND_URL;
+      if (!backendUrl) {
+        console.warn("VITE_BACKEND_URL is not set");
+        setLoading(false);
+        return;
+      }
       const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/api/orders/quote`,
+        `${backendUrl}/api/orders/quote`,
         { orderedItems: updatedCart }
       );
 
@@ -37,46 +47,45 @@ export default function Cart() {
       }
     } catch (error) {
       console.error("Error fetching cart total:", error);
+      toast.error("Error calculating cart total");
+    } finally {
+      setLoading(false);
     }
   }
 
   function handleItemDelete() {
-    fetchCartData(); // Refresh cart after deletion
-    toast.success("Item deleted from cart");
+    fetchCartData();
+    toast.success("Item removed from cart");
   }
 
   return (
-    <div
-      className="w-full min-h-screen flex flex-col items-center p-4 relative"
-      style={{
-        backgroundImage: 'url("/background3.png")',
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundAttachment: "fixed",
-      }}
-    >
-      {/* Background Overlay */}
-      <div className="absolute inset-0 bg-black/40"></div>
+    <div className="w-full min-h-screen bg-gradient-to-b from-beauty-cream via-white to-beauty-cream py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-beauty-dusty-rose to-beauty-blush rounded-full mb-6">
+            <FaShoppingCart className="text-white text-3xl" />
+          </div>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-800 mb-4">
+            Shopping Cart
+          </h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Review your items and proceed to checkout
+          </p>
+          <div className="w-24 h-1 bg-gradient-to-r from-beauty-dusty-rose to-beauty-blush mx-auto mt-4"></div>
+        </div>
 
-      {/* Cart Table */}
-      {cart.length > 0 ? (
-        // Make table container horizontally scrollable on small screens
-        <div className="relative w-full overflow-x-auto">
-          <table className="relative mx-auto border border-gray-400 border-collapse bg-white backdrop-filter backdrop-blur-lg bg-opacity-30 shadow-lg rounded-lg overflow-hidden
-                            w-full sm:w-3/5">
-            <thead>
-              <tr className="border border-gray-200 text-gray-700 bg-yellow-500 text-lg font-semibold
-                             sm:text-lg text-sm">
-                <th className="border border-gray-200 p-1 sm:p-2">Image</th>
-                <th className="border border-gray-200 p-1 sm:p-2">Product Name</th>
-                <th className="border border-gray-200 p-1 sm:p-2">Product ID</th>
-                <th className="border border-gray-200 p-1 sm:p-2">Qty</th>
-                <th className="border border-gray-200 p-1 sm:p-2">Price</th>
-                <th className="border border-gray-200 p-1 sm:p-2">Total</th>
-                <th className="border border-gray-200 p-1 sm:p-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
+        {loading ? (
+          <div className="flex justify-center items-center py-20">
+            <div className="relative">
+              <div className="absolute inset-0 rounded-full h-24 w-24 bg-gradient-to-tr from-beauty-dusty-rose to-beauty-blush opacity-30 blur-lg"></div>
+              <div className="animate-spin rounded-full h-24 w-24 border-[6px] border-gray-200 border-t-beauty-dusty-rose border-t-8"></div>
+            </div>
+          </div>
+        ) : cart.length > 0 ? (
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Cart Items */}
+            <div className="lg:col-span-2 space-y-4">
               {cart.map((item) => (
                 <CartCard
                   key={item.productId}
@@ -85,38 +94,74 @@ export default function Cart() {
                   onItemDelete={handleItemDelete}
                 />
               ))}
-            </tbody>
-          </table>
-        </div>
-      ) : (
-        <h2 className="relative text-2xl font-semibold text-white mt-10 text-center">
-          Your cart is empty!
-        </h2>
-      )}
+            </div>
 
-      {/* Cart Summary */}
-      {cart.length > 0 && (
-        <div className="relative mt-6 text-center bg-white backdrop-filter backdrop-blur-lg bg-opacity-30 p-4 sm:p-6 rounded-lg shadow-md
-                        w-full max-w-md sm:w-1/3">
-          <h1 className="text-xl sm:text-[27px] font-bold text-gray-700">
-            Total: LKR. {labeledTotal.toFixed(2)}
-          </h1>
-          <h1 className="text-xl sm:text-[27px] font-bold text-gray-700">
-            Discount: LKR. {(labeledTotal - total).toFixed(2)}
-          </h1>
-          <h1 className="text-xl sm:text-[27px] font-bold text-gray-700">
-            Grand Total: LKR. {total.toFixed(2)}
-          </h1>
-          <button
-            onClick={() => navigate("/shipping", { state: { items: cart } })}
-            className="bg-gradient-to-r from-yellow-400 to-yellow-600 hover:from-yellow-300 hover:to-yellow-500
-                       text-white font-semibold p-3 rounded-lg w-full sm:w-[300px] mt-4 shadow-md
-                       transition-transform transform hover:scale-105"
-          >
-            Checkout
-          </button>
-        </div>
-      )}
+            {/* Order Summary */}
+            <div className="lg:col-span-1">
+              <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8 sticky top-4">
+                <h2 className="text-2xl font-bold text-gray-800 mb-6">Order Summary</h2>
+                
+                <div className="space-y-4 mb-6">
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-600">Subtotal</span>
+                    <span className="text-gray-800 font-semibold">LKR. {labeledTotal.toFixed(2)}</span>
+                  </div>
+                  
+                  {labeledTotal > total && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Discount</span>
+                      <span className="text-green-600 font-semibold">
+                        - LKR. {(labeledTotal - total).toFixed(2)}
+                      </span>
+                    </div>
+                  )}
+                  
+                  <div className="border-t border-beauty-blush/20 pt-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-xl font-bold text-gray-800">Total</span>
+                      <span className="text-2xl font-bold text-beauty-dusty-rose">
+                        LKR. {total.toFixed(2)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => navigate("/shipping", { state: { items: cart } })}
+                  className="w-full bg-gradient-to-r from-beauty-dusty-rose to-beauty-blush hover:from-beauty-blush hover:to-beauty-dusty-rose text-white font-semibold py-4 rounded-xl shadow-lg transform transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
+                >
+                  Proceed to Checkout
+                  <FaArrowRight />
+                </button>
+
+                <button
+                  onClick={() => navigate("/products")}
+                  className="w-full mt-4 bg-white border-2 border-beauty-dusty-rose text-beauty-dusty-rose font-semibold py-4 rounded-xl hover:bg-beauty-cream transform transition-all duration-300"
+                >
+                  Continue Shopping
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-20">
+            <div className="inline-block p-12 bg-white rounded-2xl shadow-xl">
+              <div className="w-24 h-24 bg-beauty-cream rounded-full flex items-center justify-center mx-auto mb-6">
+                <FaShoppingCart className="text-beauty-dusty-rose text-5xl opacity-50" />
+              </div>
+              <h2 className="text-3xl font-bold text-gray-800 mb-4">Your cart is empty!</h2>
+              <p className="text-gray-600 mb-8">Start adding products to your cart</p>
+              <button
+                onClick={() => navigate("/products")}
+                className="px-8 py-4 bg-gradient-to-r from-beauty-dusty-rose to-beauty-blush hover:from-beauty-blush hover:to-beauty-dusty-rose text-white font-semibold rounded-full shadow-lg transform transition-all duration-300 hover:scale-105 inline-flex items-center gap-2"
+              >
+                Browse Products
+                <FaArrowRight />
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

@@ -34,32 +34,51 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="bg-secondary w-full h-[100px] flex items-center shadow-lg px-6 lg:px-12 relative">
-      <img src="/logo1.png" className="cursor-pointer h-full rounded-full" alt="Logo" />
+    <header className="bg-gradient-to-r from-beauty-dusty-rose via-beauty-blush to-beauty-peach w-full h-[100px] flex items-center shadow-xl px-4 sm:px-6 lg:px-12 relative z-50">
+      {/* Logo */}
+      <Link to="/" className="flex items-center">
+        <img src="/logo1.png" className="cursor-pointer h-16 sm:h-20 rounded-full shadow-lg hover:shadow-xl transition-shadow duration-300" alt="Crystal Beauty Care Logo" />
+      </Link>
 
       {/* Mobile Menu Button */}
       <button
         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        className="text-white text-2xl ml-auto lg:hidden"
+        className="text-white text-2xl ml-auto lg:hidden p-2 hover:bg-white/20 rounded-lg transition-colors"
+        aria-label="Toggle menu"
       >
         {mobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
       </button>
 
       {/* Desktop Nav */}
-      <nav className="hidden lg:flex items-center gap-20 ml-auto">
-        <Link to="/" className="text-white font-bold text-xl flex items-center gap-2 hover:border-b-4 hover:border-b-white transition-all duration-200">
+      <nav className="hidden lg:flex items-center gap-6 ml-auto">
+        <Link 
+          to="/" 
+          className="text-white font-semibold text-lg flex items-center gap-2 px-4 py-2 rounded-full hover:bg-white/20 transition-all duration-200 hover:scale-105"
+        >
           <FaHome /> Home
         </Link>
-        <Link to="/products" className="text-white font-bold text-xl flex items-center gap-2 hover:border-b-4 hover:border-b-white transition-all duration-200">
+        <Link 
+          to="/products" 
+          className="text-white font-semibold text-lg flex items-center gap-2 px-4 py-2 rounded-full hover:bg-white/20 transition-all duration-200 hover:scale-105"
+        >
           <FaBox /> Products
         </Link>
-        <Link to="/about" className="text-white font-bold text-xl flex items-center gap-2 hover:border-b-4 hover:border-b-white transition-all duration-200">
+        <Link 
+          to="/about" 
+          className="text-white font-semibold text-lg flex items-center gap-2 px-4 py-2 rounded-full hover:bg-white/20 transition-all duration-200 hover:scale-105"
+        >
           <FaInfoCircle /> About Us
         </Link>
-        <Link to="/contact" className="text-white font-bold text-xl flex items-center gap-2 hover:border-b-4 hover:border-b-white transition-all duration-200">
+        <Link 
+          to="/contact" 
+          className="text-white font-semibold text-lg flex items-center gap-2 px-4 py-2 rounded-full hover:bg-white/20 transition-all duration-200 hover:scale-105"
+        >
           <FaPhone /> Contact Us
         </Link>
-        <Link to="/cart" className="text-white font-bold text-xl flex items-center gap-2 hover:border-b-4 hover:border-b-white transition-all duration-200">
+        <Link 
+          to="/cart" 
+          className="text-white font-semibold text-lg flex items-center gap-2 px-4 py-2 rounded-full hover:bg-white/20 transition-all duration-200 hover:scale-105 relative"
+        >
           <FaShoppingCart /> Cart
         </Link>
 
@@ -67,22 +86,32 @@ export default function Header() {
           <div className="relative" ref={profileRef}>
             <button
               onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-              className="text-white font-bold text-xl flex items-center gap-2 hover:border-b-4 hover:border-b-white transition-all duration-200"
+              className="text-white font-semibold text-lg flex items-center gap-2 px-4 py-2 rounded-full hover:bg-white/20 transition-all duration-200 hover:scale-105"
             >
-              <FaUserCircle /> Profile
+              <FaUserCircle className="text-xl" /> Profile
             </button>
             {showProfileDropdown && (
               <div
-                className="absolute right-0 mt-2 bg-white backdrop-filter backdrop-blur-lg bg-opacity-30 shadow-md rounded-lg p-2 w-48 z-50"
+                className="absolute right-0 mt-2 bg-white shadow-2xl rounded-2xl p-2 w-56 z-50 border border-beauty-blush/20 backdrop-blur-md"
                 onMouseLeave={() => setShowProfileDropdown(false)}
               >
-                <button onClick={() => navigate("/user")} className="flex items-center gap-2 text-white font-bold hover:bg-secondary p-2 rounded-md w-full text-left">
-                  <FaUser /> My Account
+                <button 
+                  onClick={() => { navigate("/user"); setShowProfileDropdown(false); }} 
+                  className="flex items-center gap-3 text-gray-800 font-semibold hover:bg-beauty-cream p-3 rounded-xl w-full text-left transition-colors"
+                >
+                  <FaUser className="text-beauty-dusty-rose" /> My Account
                 </button>
-                <button onClick={() => navigate("/orders")} className="flex items-center gap-2 text-white font-bold hover:bg-secondary p-2 rounded-md w-full text-left">
-                  <FaShoppingBag /> My Orders
+                <button 
+                  onClick={() => { navigate("/orders"); setShowProfileDropdown(false); }} 
+                  className="flex items-center gap-3 text-gray-800 font-semibold hover:bg-beauty-cream p-3 rounded-xl w-full text-left transition-colors"
+                >
+                  <FaShoppingBag className="text-beauty-dusty-rose" /> My Orders
                 </button>
-                <button onClick={handleLogout} className="flex items-center gap-2 text-white font-bold hover:bg-secondary p-2 rounded-md w-full text-left">
+                <div className="border-t border-beauty-blush/20 my-1"></div>
+                <button 
+                  onClick={() => { handleLogout(); setShowProfileDropdown(false); }} 
+                  className="flex items-center gap-3 text-red-600 font-semibold hover:bg-red-50 p-3 rounded-xl w-full text-left transition-colors"
+                >
                   <FaSignOutAlt /> Logout
                 </button>
               </div>
@@ -90,10 +119,16 @@ export default function Header() {
           </div>
         ) : (
           <>
-            <Link to="/login" className="text-white font-bold text-xl flex items-center gap-2 hover:border-b-4 hover:border-b-white transition-all duration-200">
+            <Link 
+              to="/login" 
+              className="text-white font-semibold text-lg flex items-center gap-2 px-4 py-2 rounded-full hover:bg-white/20 transition-all duration-200 hover:scale-105"
+            >
               <FaSignInAlt /> Login
             </Link>
-            <Link to="/signup" className="text-white font-bold text-xl flex items-center gap-2 hover:border-b-4 hover:border-b-white transition-all duration-200">
+            <Link 
+              to="/signup" 
+              className="bg-white text-beauty-dusty-rose font-semibold text-lg flex items-center gap-2 px-6 py-2 rounded-full hover:bg-beauty-cream transition-all duration-200 hover:scale-105 shadow-lg"
+            >
               <FaUserPlus /> Signup
             </Link>
           </>
@@ -102,41 +137,80 @@ export default function Header() {
 
       {/* Mobile Nav */}
       {mobileMenuOpen && (
-        <nav className="absolute top-[100px] left-0 w-full bg-secondary flex flex-col gap-4 p-6 lg:hidden z-50">
-          <Link to="/" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg flex items-center gap-2">
+        <nav className="absolute top-[100px] left-0 w-full bg-gradient-to-b from-beauty-dusty-rose to-beauty-blush flex flex-col gap-2 p-6 lg:hidden z-50 shadow-2xl">
+          <Link 
+            to="/" 
+            onClick={() => setMobileMenuOpen(false)} 
+            className="text-white text-lg font-semibold flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/20 transition-colors"
+          >
             <FaHome /> Home
           </Link>
-          <Link to="/products" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg flex items-center gap-2">
+          <Link 
+            to="/products" 
+            onClick={() => setMobileMenuOpen(false)} 
+            className="text-white text-lg font-semibold flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/20 transition-colors"
+          >
             <FaBox /> Products
           </Link>
-          <Link to="/about" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg flex items-center gap-2">
+          <Link 
+            to="/about" 
+            onClick={() => setMobileMenuOpen(false)} 
+            className="text-white text-lg font-semibold flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/20 transition-colors"
+          >
             <FaInfoCircle /> About Us
           </Link>
-          <Link to="/contact" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg flex items-center gap-2">
+          <Link 
+            to="/contact" 
+            onClick={() => setMobileMenuOpen(false)} 
+            className="text-white text-lg font-semibold flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/20 transition-colors"
+          >
             <FaPhone /> Contact Us
           </Link>
-          <Link to="/cart" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg flex items-center gap-2">
+          <Link 
+            to="/cart" 
+            onClick={() => setMobileMenuOpen(false)} 
+            className="text-white text-lg font-semibold flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/20 transition-colors"
+          >
             <FaShoppingCart /> Cart
           </Link>
 
           {isLoggedIn ? (
             <>
-              <button onClick={() => { setMobileMenuOpen(false); navigate("/user"); }} className="text-white text-lg flex items-center gap-2">
+              <div className="border-t border-white/30 my-2"></div>
+              <button 
+                onClick={() => { setMobileMenuOpen(false); navigate("/user"); }} 
+                className="text-white text-lg font-semibold flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/20 transition-colors text-left"
+              >
                 <FaUser /> My Account
               </button>
-              <button onClick={() => { setMobileMenuOpen(false); navigate("/orders"); }} className="text-white text-lg flex items-center gap-2">
+              <button 
+                onClick={() => { setMobileMenuOpen(false); navigate("/orders"); }} 
+                className="text-white text-lg font-semibold flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/20 transition-colors text-left"
+              >
                 <FaShoppingBag /> My Orders
               </button>
-              <button onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="text-white text-lg flex items-center gap-2">
+              <button 
+                onClick={() => { handleLogout(); setMobileMenuOpen(false); }} 
+                className="text-red-100 text-lg font-semibold flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/20 transition-colors text-left"
+              >
                 <FaSignOutAlt /> Logout
               </button>
             </>
           ) : (
             <>
-              <Link to="/login" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg flex items-center gap-2">
+              <div className="border-t border-white/30 my-2"></div>
+              <Link 
+                to="/login" 
+                onClick={() => setMobileMenuOpen(false)} 
+                className="text-white text-lg font-semibold flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/20 transition-colors"
+              >
                 <FaSignInAlt /> Login
               </Link>
-              <Link to="/signup" onClick={() => setMobileMenuOpen(false)} className="text-white text-lg flex items-center gap-2">
+              <Link 
+                to="/signup" 
+                onClick={() => setMobileMenuOpen(false)} 
+                className="bg-white text-beauty-dusty-rose text-lg font-semibold flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-beauty-cream transition-colors text-center justify-center shadow-lg"
+              >
                 <FaUserPlus /> Signup
               </Link>
             </>
