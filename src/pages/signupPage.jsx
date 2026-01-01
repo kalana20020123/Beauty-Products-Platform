@@ -94,8 +94,14 @@ export default function SignupPage() {
       });
   }
 
+  const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+  const hasGoogleAuth = googleClientId && googleClientId !== 'placeholder-client-id.apps.googleusercontent.com';
   const googleSignup = useGoogleLogin({
     onSuccess: (res) => {
+      if (!googleClientId) {
+        toast.error('Google OAuth not configured');
+        return;
+      }
       const backendUrl = import.meta.env.VITE_BACKEND_URL;
       if (!backendUrl) {
         toast.error('Backend URL not configured');
@@ -117,11 +123,19 @@ export default function SignupPage() {
           console.error("Google signup error:", error);
           toast.error("Google signup failed. Please try again.");
         });
+    },
+    onError: (error) => {
+      console.error("Google login error:", error);
+      if (!googleClientId) {
+        toast.error('Google OAuth not configured');
+      } else {
+        toast.error("Google signup failed. Please try again.");
+      }
     }
   });
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 flex items-center justify-center py-12 px-4" style={{ minHeight: '100vh', width: '100%', position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+    <div className="w-full min-h-screen bg-gradient-to-br from-amber-50 via-white to-orange-50 flex items-center justify-center py-12 px-4">
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
@@ -264,20 +278,24 @@ export default function SignupPage() {
               )}
             </button>
 
-            <div className="relative flex items-center my-6">
-              <div className="flex-grow border-t border-pink-200"></div>
-              <span className="mx-4 text-gray-500 font-medium text-sm">OR</span>
-              <div className="flex-grow border-t border-pink-200"></div>
-            </div>
+            {hasGoogleAuth && (
+              <>
+                <div className="relative flex items-center my-6">
+                  <div className="flex-grow border-t border-pink-200"></div>
+                  <span className="mx-4 text-gray-500 font-medium text-sm">OR</span>
+                  <div className="flex-grow border-t border-pink-200"></div>
+                </div>
 
-            <button 
-              onClick={() => googleSignup()} 
-              type="button" 
-              className="w-full flex items-center justify-center gap-3 bg-white border-2 border-rose-500 text-rose-500 font-semibold py-4 rounded-xl hover:bg-amber-50 transform transition-all duration-300 hover:scale-105 shadow-md"
-            >
-              <BsGoogle className="text-xl" />
-              Sign up with Google
-            </button>
+                <button 
+                  onClick={() => googleSignup()} 
+                  type="button" 
+                  className="w-full flex items-center justify-center gap-3 bg-white border-2 border-rose-500 text-rose-500 font-semibold py-4 rounded-xl hover:bg-amber-50 transform transition-all duration-300 hover:scale-105 shadow-md"
+                >
+                  <BsGoogle className="text-xl" />
+                  Sign up with Google
+                </button>
+              </>
+            )}
 
             <div className="text-center pt-4">
               <span className="text-sm text-gray-600">Already have an account?</span>

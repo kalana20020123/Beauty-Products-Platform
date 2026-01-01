@@ -118,11 +118,11 @@ export default function ProductPage(){
         {loadingStatus == "loaded" && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             {products.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 justify-items-center">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 justify-items-center">
                 {products.map((product) => {
                   if (!product || !product.productId) return null;
                   return (
-                    <div key={product.productId} className="transform transition-all duration-300 hover:scale-105">
+                    <div key={product.productId} className="w-full flex justify-center">
                       <ProductCard product={product} />
                     </div>
                   );
